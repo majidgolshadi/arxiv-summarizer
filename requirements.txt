@@ -1,0 +1,8 @@
+# Core libraries for the application
+requests
+pypdf
+PyYAML
+tqdm
+argparse
+# Assuming an AI client library for summarization, e.g., Google GenAI or OpenAI
+google-genai
