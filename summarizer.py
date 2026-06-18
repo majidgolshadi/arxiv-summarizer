@@ -29,25 +29,33 @@ def generate_farsi_summary(pdf_path: str, title: str, summary_length: str) -> Op
 
     # 2. Determine length and create prompt
     if summary_length == 'short':
-        word_count_hint = "150–250 words"
+        word_count_hint = "50–60 words"
     elif summary_length == 'medium':
-        word_count_hint = "400–700 words"
+        word_count_hint = "100–130 words"
     else:
         print(f"[ERROR] Unknown summary length: {summary_length}")
         return None
+    
+    language_hint = "Farsi (Persian)"
 
     # The prompt structure is crucial for AI model interaction
     prompt = f"""
-    You are an expert academic summarization system. 
-    Your task is to read the full text of an academic paper and generate a summary in Farsi (Persian).
+    You are an expert in AI and a university teacher. 
+    Your task is to read the full text of an academic paper and generate a super simple to understand summary in {language_hint}.
     
     *** CONSTRAINTS ***
-    1. Language: The summary MUST be in formal, academic Farsi (Persian).
-    2. Length: The summary should be approximately {word_count_hint}.
-    3. Tone: Maintain a highly academic and formal tone.
-    4. Title: The paper's title is: "{title}".
-    5. Summary Format: Provide ONLY the summary text. Do not include titles, explanations, or extra markdown. Start immediately with the summary text.
-    
+    1. Language: The summary MUST be as simple as possible, easy to understand for a dumb software engineer in {language_hint}.
+    2. Length: The summary should be approximately {word_count_hint} for the problem and {word_count_hint} for the solution.
+    3. Title: The paper's title is: "{title}".
+    4. Summary Format: It must contain two sections: `problem` and `solution`. 
+        problem section explaining the problem that the paper is trying to solve
+        solution section explaining the solution proposed by the paper.
+        For each section, provide concise content.
+        The summary text of each must not include titles, explanations, or extra markdown. Start immediately with the summary text.
+        When a sentence ends, go to the next line.
+        If you can bullet point to explain the content better, do it.
+        Put two blank lines between the problem and solution sections.
+
     *** FULL ARTICLE TEXT ***
     {text_content[:10000]} 
     """ # Truncate text to prevent overly long context window usage
