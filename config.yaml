@@ -1,0 +1,7 @@
+ollama_api_url: "http://localhost:11434/api/generate"
+model_name: "gemma4"
+max_text_chars: 10000
+language: "Farsi (Persian)"
+word_count_hints:
+  short: "20–40 words"
+  medium: "100–130 words"
