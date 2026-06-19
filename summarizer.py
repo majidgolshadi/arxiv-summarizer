@@ -29,7 +29,7 @@ def generate_farsi_summary(pdf_path: str, title: str, summary_length: str) -> Op
 
     # 2. Determine length and create prompt
     if summary_length == 'short':
-        word_count_hint = "50–60 words"
+        word_count_hint = "20–40 words"
     elif summary_length == 'medium':
         word_count_hint = "100–130 words"
     else:
