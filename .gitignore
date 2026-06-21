@@ -1,0 +1,4 @@
+./venv
+/2026_*
+/__pycache__
+paper.txt

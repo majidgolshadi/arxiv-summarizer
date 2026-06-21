@@ -11,7 +11,7 @@ from utils import get_date_directory
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Download ArXiv PDFs and generate Farsi summaries.",
+        description="Download ArXiv PDFs and generate summaries.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("--input", required=True, help="Path to the text file containing URLs.")
