@@ -7,7 +7,7 @@ import extractor
 import pdf_parser
 import summarizer
 from server import start_server
-from utils import get_date_directory
+from utils import get_date_directory, get_latest_directory
 
 import config
 
@@ -30,12 +30,19 @@ def main():
     )
     args = parser.parse_args()
 
-    date_dir = os.path.join(config.DATA_DIR, get_date_directory())
-    summary_dir = os.path.join(date_dir, "summary")
-
     if args.web_server_only:
+        latest_dir_name = get_latest_directory(config.DATA_DIR)
+        if latest_dir_name:
+            date_dir = os.path.join(config.DATA_DIR, latest_dir_name)
+        else:
+            date_dir = os.path.join(config.DATA_DIR, get_date_directory())
+        
+        summary_dir = os.path.join(date_dir, "summary")
         start_server(summary_dir)
         return
+
+    date_dir = os.path.join(config.DATA_DIR, get_date_directory())
+    summary_dir = os.path.join(date_dir, "summary")
 
     if not args.input or not args.summary_length:
         parser.error("--input and --summary-length are required when not using --serve-only")
