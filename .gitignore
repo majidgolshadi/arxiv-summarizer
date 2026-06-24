@@ -2,3 +2,5 @@
 /2026_*
 /__pycache__
 paper.txt
+arXiv-article-repository/*.pdf
+arXiv-article-repository/*.txt

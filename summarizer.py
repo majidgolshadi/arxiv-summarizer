@@ -1,16 +1,13 @@
 import os
+import requests
 from typing import Optional
 
-import requests
-
 import config
-from pdf_parser import parse_pdf_metadata_and_text
 
 
-def generate_summary(pdf_path: str, title: str, summary_length: str) -> Optional[str]:
+def generate_summary(pdf_path: str, text_content: str, title: str, summary_length: str) -> Optional[str]:
     print(f"\n--- Generating Summary for: {os.path.basename(pdf_path)} ---")
 
-    _, text_content = parse_pdf_metadata_and_text(pdf_path)
     if not text_content:
         print(f"[SKIP] Cannot generate summary: No text content extracted from {os.path.basename(pdf_path)}.")
         return None

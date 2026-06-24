@@ -29,7 +29,7 @@ With this application, you simply copy the email content into a text file and pr
 2. Install required Python packages:
    ```bash
    python3 -m venv venv 
-   srouce venv/bin/activate
+   source venv/bin/activate
    pip3 install -r requirements.txt
    ```
 

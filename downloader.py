@@ -1,7 +1,6 @@
 import os
 
 import requests
-from tqdm import tqdm
 
 
 def download_pdfs(pdf_urls: list[str], output_dir: str) -> list[str]:
@@ -11,7 +10,7 @@ def download_pdfs(pdf_urls: list[str], output_dir: str) -> list[str]:
     os.makedirs(output_dir, exist_ok=True)
 
     for url in pdf_urls:
-        identifier = url.replace("https://arxiv.org/pdf/", "")
+        identifier = url.rsplit("/", 1)[-1]
         local_filename = f"{identifier}.pdf"
         local_filepath = os.path.join(output_dir, local_filename)
 

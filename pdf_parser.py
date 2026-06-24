@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Optional
 
 from pypdf import PdfReader
@@ -16,7 +16,7 @@ def parse_pdf_metadata_and_text(pdf_path: str) -> tuple[Optional[str], Optional[
             title = metadata.title
 
         if not title:
-            title = os.path.splitext(os.path.basename(pdf_path))[0].replace("_", " ")
+            title = Path(pdf_path).stem.replace("_", " ")
 
         text_content = "\n".join(page.extract_text() or "" for page in reader.pages)
 

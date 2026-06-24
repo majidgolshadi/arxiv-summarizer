@@ -1,4 +1,6 @@
 ollama_api_url: "http://localhost:11434/api/generate"
+server_port: 8080
+data_dir: ./arXiv-article-repository
 model_name: "gemma4"
 max_text_chars: 10000
 language: "Farsi (Persian)"

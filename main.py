@@ -6,7 +6,10 @@ import downloader
 import extractor
 import pdf_parser
 import summarizer
+from server import start_server
 from utils import get_date_directory
+
+import config
 
 
 def main():
@@ -14,20 +17,33 @@ def main():
         description="Download ArXiv PDFs and generate summaries.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("--input", required=True, help="Path to the text file containing URLs.")
+    parser.add_argument("--input", help="Path to the text file containing URLs.")
     parser.add_argument(
         "--summary-length",
-        required=True,
         choices=["short", "medium"],
         help="Desired length for the summary: 'short' or 'medium'.",
     )
+    parser.add_argument(
+        "--web-server-only",
+        action="store_true",
+        help="Start the web server only, skipping download and summarization.",
+    )
     args = parser.parse_args()
+
+    date_dir = os.path.join(config.DATA_DIR, get_date_directory())
+    summary_dir = os.path.join(date_dir, "summary")
+
+    if args.web_server_only:
+        start_server(summary_dir)
+        return
+
+    if not args.input or not args.summary_length:
+        parser.error("--input and --summary-length are required when not using --serve-only")
 
     if not os.path.exists(args.input):
         print(f"Error: Input file not found at {args.input}")
         sys.exit(1)
 
-    date_dir = get_date_directory()
     os.makedirs(date_dir, exist_ok=True)
     print(f"Output directory set to: {date_dir}")
 
@@ -42,17 +58,16 @@ def main():
         return
 
     print("\n--- Starting Summary Generation and Saving ---")
-    summary_dir = os.path.join(date_dir, "summary")
     os.makedirs(summary_dir, exist_ok=True)
 
     for pdf_path in downloaded_paths:
-        title, _ = pdf_parser.parse_pdf_metadata_and_text(pdf_path)
+        title, text_content = pdf_parser.parse_pdf_metadata_and_text(pdf_path)
 
         if not title:
             print(f"[FAIL] Skipping summary for {os.path.basename(pdf_path)}: Could not determine a title.")
             continue
 
-        summary_text = summarizer.generate_summary(pdf_path, title, args.summary_length)
+        summary_text = summarizer.generate_summary(pdf_path, text_content, title, args.summary_length)
         if summary_text:
             base_name = os.path.splitext(os.path.basename(pdf_path))[0]
             summary_filepath = os.path.join(summary_dir, f"{base_name}.txt")
@@ -61,6 +76,7 @@ def main():
             print(f"[SUCCESS] Summary saved to: {summary_filepath}")
 
     print("\n--- Workflow Complete ---")
+    start_server(summary_dir)
 
 
 if __name__ == "__main__":
