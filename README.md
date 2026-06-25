@@ -1,6 +1,10 @@
 # ArXiv Summarizer
 
-A Python application that downloads academic papers from arXiv and generates summaries using AI in your mother tongue languge.
+A Python application that downloads academic papers from arXiv and generates summaries using AI in your mother tongue.
+
+<img width="2319" height="1329" alt="Screenshot 2026-06-25 at 08 45 04" src="https://github.com/user-attachments/assets/45c95391-2f75-43f3-a0d4-253582ec6aab" />
+
+
 
 ## Description
 
