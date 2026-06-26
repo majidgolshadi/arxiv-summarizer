@@ -1,6 +1,7 @@
-./venv
-/2026_*
-/__pycache__
+.idea
+venv
+2026_*
+__pycache__
 paper.txt
 arXiv-article-repository/*.pdf
 arXiv-article-repository/*.txt
