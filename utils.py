@@ -1,5 +1,6 @@
 import datetime
 import re
+from pathlib import Path
 
 
 def get_date_directory():
@@ -7,7 +8,6 @@ def get_date_directory():
 
 
 def get_latest_directory(base_dir):
-    from pathlib import Path
     base_path = Path(base_dir)
     if not base_path.exists() or not base_path.is_dir():
         return None

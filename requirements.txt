@@ -1,3 +1,4 @@
 requests
 pypdf
 PyYAML
+notebooklm-py  # also run: playwright install chromium

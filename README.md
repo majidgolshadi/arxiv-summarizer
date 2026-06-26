@@ -81,3 +81,33 @@ curl -fsSL https://ollama.com/install.sh | sh
 
 # Pull the gemma4 model
 ollama pull gemma4
+```
+
+## NotebookLM Export (optional)
+
+When you archive papers, the app can automatically create a Google NotebookLM notebook and add the selected PDFs as sources.
+
+### Setup
+
+1. Enable the feature in `config.yaml`:
+   ```yaml
+   notebooklm_export: true
+   ```
+
+2. Install the Playwright browser used for automation:
+   ```bash
+   pip install "notebooklm-py[browser]"
+   playwright install chromium
+   ```
+
+3. Log in to your Google account once:
+   ```bash
+   notebooklm login
+   ```
+   This opens a browser window. Sign in and close it — your session is saved locally.
+
+### Usage
+
+After setup, archiving papers from the UI will automatically create a notebook named **"AI - arXiv - YYYY Mon DD"** in your NotebookLM account with the selected PDFs added as sources.
+
+If you see "NotebookLM: auth required" in the UI, run `notebooklm login` again to refresh your session.

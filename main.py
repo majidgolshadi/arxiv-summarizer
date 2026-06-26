@@ -1,15 +1,14 @@
 import argparse
-import os
 import sys
+from pathlib import Path
 
+import config
 import downloader
 import extractor
 import pdf_parser
 import summarizer
 from server import start_server
 from utils import get_date_directory, get_latest_directory
-
-import config
 
 
 def main():
@@ -26,63 +25,56 @@ def main():
     parser.add_argument(
         "--web-server-only",
         action="store_true",
-        help="Start the web server only, skipping download and summarization.",
+        help="Start the web server using the most recent output directory.",
     )
     args = parser.parse_args()
 
-    if args.web_server_only:
-        latest_dir_name = get_latest_directory(config.DATA_DIR)
-        if latest_dir_name:
-            date_dir = os.path.join(config.DATA_DIR, latest_dir_name)
-        else:
-            date_dir = os.path.join(config.DATA_DIR, get_date_directory())
-        
-        summary_dir = os.path.join(date_dir, "summary")
-        start_server(summary_dir)
-        return
+    data_dir = Path(config.DATA_DIR)
 
-    date_dir = os.path.join(config.DATA_DIR, get_date_directory())
-    summary_dir = os.path.join(date_dir, "summary")
+    if args.web_server_only:
+        latest = get_latest_directory(data_dir)
+        date_dir = data_dir / (latest or get_date_directory())
+        start_server(date_dir / "summary")
+        return
 
     if not args.input or not args.summary_length:
-        parser.error("--input and --summary-length are required when not using --serve-only")
+        parser.error("--input and --summary-length are required")
 
-    if not os.path.exists(args.input):
-        print(f"Error: Input file not found at {args.input}")
+    input_path = Path(args.input)
+    if not input_path.exists():
+        print(f"Error: input file not found: {input_path}")
         sys.exit(1)
 
-    os.makedirs(date_dir, exist_ok=True)
-    print(f"Output directory set to: {date_dir}")
+    date_dir = data_dir / get_date_directory()
+    summary_dir = date_dir / "summary"
+    date_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Output directory: {date_dir}")
 
-    pdf_urls = extractor.extract_and_convert_urls(args.input)
+    pdf_urls = extractor.extract_and_convert_urls(str(input_path))
     if not pdf_urls:
-        print("Exiting workflow: No PDF URLs found or an error occurred during extraction.")
+        print("No PDF URLs found — exiting.")
         return
 
-    downloaded_paths = downloader.download_pdfs(pdf_urls, date_dir)
-    if not downloaded_paths:
-        print("Exiting workflow: No PDFs were successfully downloaded.")
+    downloaded = downloader.download_pdfs(pdf_urls, str(date_dir))
+    if not downloaded:
+        print("No PDFs downloaded — exiting.")
         return
 
-    print("\n--- Starting Summary Generation and Saving ---")
-    os.makedirs(summary_dir, exist_ok=True)
+    print("\n--- Generating summaries ---")
+    summary_dir.mkdir(exist_ok=True)
 
-    for pdf_path in downloaded_paths:
-        title, text_content = pdf_parser.parse_pdf_metadata_and_text(pdf_path)
-
+    for pdf_path in downloaded:
+        title, text = pdf_parser.parse_pdf_metadata_and_text(pdf_path)
         if not title:
-            print(f"[FAIL] Skipping summary for {os.path.basename(pdf_path)}: Could not determine a title.")
+            print(f"[SKIP] {Path(pdf_path).name}: could not determine title")
             continue
+        summary = summarizer.generate_summary(pdf_path, text, title, args.summary_length)
+        if summary:
+            out = summary_dir / f"{Path(pdf_path).stem}.txt"
+            out.write_text(f"{title}\n\n{summary}", encoding="utf-8")
+            print(f"[OK] {out}")
 
-        summary_text = summarizer.generate_summary(pdf_path, text_content, title, args.summary_length)
-        if summary_text:
-            base_name = os.path.splitext(os.path.basename(pdf_path))[0]
-            summary_filepath = os.path.join(summary_dir, f"{base_name}.txt")
-            with open(summary_filepath, "w", encoding="utf-8") as f:
-                f.write(f"{title}\n\n{summary_text}")
-            print(f"[SUCCESS] Summary saved to: {summary_filepath}")
-
-    print("\n--- Workflow Complete ---")
+    print("\n--- Done ---")
     start_server(summary_dir)
 
 

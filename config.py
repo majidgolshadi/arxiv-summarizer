@@ -10,3 +10,4 @@ LANGUAGE = _cfg["language"]
 WORD_COUNT_HINTS = _cfg["word_count_hints"]
 DATA_DIR = _cfg["data_dir"]
 SERVER_PORT = _cfg["server_port"]
+NOTEBOOKLM_EXPORT = _cfg.get("notebooklm_export", False)

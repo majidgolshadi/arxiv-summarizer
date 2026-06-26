@@ -7,3 +7,4 @@ language: "Farsi (Persian)"
 word_count_hints:
   short: "20–40 words"
   medium: "100–130 words"
+notebooklm_export: true

@@ -196,6 +196,29 @@
     letter-spacing: 0.01em;
   }
 
+  #nlm-auth {
+    display: none;
+    margin-top: 10px;
+    padding: 9px 10px;
+    background: var(--sb-hover);
+    border: 1px solid var(--sb-border);
+    border-radius: 6px;
+    font-size: 10.5px;
+    color: var(--sb-muted);
+    line-height: 1.6;
+  }
+  #nlm-auth code {
+    display: block;
+    margin-top: 5px;
+    padding: 5px 7px;
+    background: var(--sb-bg);
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--accent);
+    font-size: 10.5px;
+    user-select: all;
+  }
+
   /* ── Reading panel ──────────────────────────────────── */
   #panel {
     flex: 1;
@@ -285,6 +308,11 @@
       <span id="sel-count">0</span>
     </button>
     <div id="archive-status"></div>
+    <div id="nlm-auth">
+      Run this once in your terminal to link your Google account:
+      <code>notebooklm login</code>
+      Then click Archive again.
+    </div>
   </div>
 </div>
 
@@ -369,6 +397,7 @@
     archiveBtn().disabled = true;
     statusEl().textContent = 'Archiving...';
     statusEl().style.color = '';
+    document.getElementById('nlm-auth').style.display = 'none';
     try {
       const res = await fetch('/archive', {
         method: 'POST',
@@ -376,16 +405,23 @@
         body: JSON.stringify({ids: [...selected]})
       });
       const data = await res.json();
-      const msg = data.archived + ' article(s) archived' +
+      let msg = data.archived + ' article(s) archived' +
         (data.not_found.length ? ', ' + data.not_found.length + ' PDF(s) not found' : '');
+      if (data.notebooklm === 'started') msg += ' · NotebookLM export started';
       statusEl().textContent = msg;
       statusEl().style.color = data.not_found.length ? '#e05252' : '#4caf7d';
+      if (data.notebooklm === 'needs_auth') {
+        statusEl().textContent += ' · NotebookLM: auth required';
+        statusEl().style.color = '#e08852';
+        document.getElementById('nlm-auth').style.display = 'block';
+      }
     } catch (e) {
       statusEl().textContent = 'Error: ' + e.message;
       statusEl().style.color = '#e05252';
     }
     archiveBtn().disabled = selected.size === 0;
   }
+
 
   function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
