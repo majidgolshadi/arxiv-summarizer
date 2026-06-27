@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ArXiv Papers</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sb-bg:       #161b27;
+    --sb-hover:    #1e2436;
+    --sb-active:   rgba(201, 168, 76, 0.10);
+    --sb-border:   #2a3046;
+    --sb-text:     #9aa3be;
+    --sb-muted:    #525c7a;
+    --accent:      #c9a84c;
+    --accent-dark: #b8942e;
+    --sel-color:   #3d9970;
+    --sel-dim:     rgba(61, 153, 112, 0.10);
+    --pn-bg:       #f7f4ef;
+    --pn-border:   #e4dfd6;
+    --pn-text:     #1d1b18;
+    --pn-muted:    #9a9188;
+  }
+
+  body {
+    display: flex;
+    height: 100vh;
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    background: var(--sb-bg);
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ───────────────────────────────────────── */
+  #sidebar {
+    width: 290px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--sb-bg);
+    border-right: 1px solid var(--sb-border);
+  }
+
+  #sidebar-header {
+    padding: 14px 12px 12px;
+    border-bottom: 1px solid var(--sb-border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 11px;
+  }
+  .brand-mark {
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--accent);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 9px; font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .brand-name {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sb-muted);
+  }
+
+  #filter {
+    width: 100%;
+    padding: 7px 10px;
+    background: var(--sb-hover);
+    border: 1px solid var(--sb-border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--sb-text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #filter::placeholder { color: var(--sb-muted); }
+  #filter:focus { border-color: var(--accent); }
+
+  /* ── Cards ─────────────────────────────────────────── */
+  #cards {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 8px 4px;
+  }
+  #cards::-webkit-scrollbar { width: 3px; }
+  #cards::-webkit-scrollbar-thumb { background: var(--sb-border); border-radius: 2px; }
+
+  .card {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 10px;
+    margin-bottom: 3px;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .card:hover { background: var(--sb-hover); }
+  .card.active  { background: var(--sb-active); border-left-color: var(--accent); }
+  .card.selected { background: var(--sel-dim); border-left-color: var(--sel-color); }
+  .card.active.selected { background: var(--sb-active); border-left-color: var(--accent); }
+
+  .card input[type="checkbox"] {
+    margin-top: 4px;
+    flex-shrink: 0;
+    accent-color: var(--sel-color);
+    cursor: pointer;
+    width: 13px; height: 13px;
+  }
+
+  .card-body { flex: 1; min-width: 0; }
+
+  .card-id {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 9.5px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+    opacity: 0.8;
+  }
+  .card.active .card-id { opacity: 1; }
+
+  .card-title {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--sb-text);
+    word-break: break-word;
+  }
+  .card.active .card-title { color: #c8cfdf; }
+
+  .no-results {
+    padding: 16px 10px;
+    text-align: center;
+    color: var(--sb-muted);
+    font-size: 12px;
+  }
+
+  /* ── Sidebar footer ─────────────────────────────────── */
+  #sidebar-footer {
+    padding: 11px 12px 13px;
+    border-top: 1px solid var(--sb-border);
+  }
+
+  #archive-btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--sb-border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--sb-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+  }
+  #archive-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  #archive-btn:not(:disabled) {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a1509;
+    box-shadow: 0 2px 10px rgba(201, 168, 76, 0.25);
+  }
+  #archive-btn:not(:disabled):hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+  #sel-count {
+    background: rgba(0,0,0,0.18);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+  }
+  #archive-btn:disabled #sel-count { background: var(--sb-border); }
+
+  #archive-status {
+    margin-top: 7px;
+    font-size: 11px;
+    min-height: 13px;
+    text-align: center;
+    color: var(--sb-muted);
+    letter-spacing: 0.01em;
+  }
+
+  #nlm-auth {
+    display: none;
+    margin-top: 10px;
+    padding: 9px 10px;
+    background: var(--sb-hover);
+    border: 1px solid var(--sb-border);
+    border-radius: 6px;
+    font-size: 10.5px;
+    color: var(--sb-muted);
+    line-height: 1.6;
+  }
+  #nlm-auth code {
+    display: block;
+    margin-top: 5px;
+    padding: 5px 7px;
+    background: var(--sb-bg);
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--accent);
+    font-size: 10.5px;
+    user-select: all;
+  }
+
+  /* ── Reading panel ──────────────────────────────────── */
+  #panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--pn-bg);
+    overflow: hidden;
+  }
+
+  #panel-header {
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid var(--pn-border);
+    background: var(--pn-bg);
+    display: none;
+  }
+
+  #panel-arxiv-id {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 10.5px;
+    color: var(--accent-dark);
+    letter-spacing: 0.07em;
+    margin-bottom: 7px;
+  }
+
+  #panel-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--pn-text);
+    line-height: 1.3;
+  }
+
+  #panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 26px 32px;
+    white-space: pre-wrap;
+    font-family: Georgia, 'Palatino Linotype', Tahoma, serif;
+    font-size: 15px;
+    line-height: 1.85;
+    color: #2e2b26;
+    direction: rtl;
+    display: none;
+  }
+  #panel-content::-webkit-scrollbar { width: 4px; }
+  #panel-content::-webkit-scrollbar-thumb { background: var(--pn-border); border-radius: 2px; }
+
+  /* ── Empty state ────────────────────────────────────── */
+  #empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: #ccc6bc;
+    user-select: none;
+  }
+  .empty-glyph {
+    width: 52px; height: 52px;
+    border: 1.5px solid #ddd8d0;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    color: #d0cbc2;
+  }
+  .empty-text {
+    font-size: 13px;
+    color: #bdb8b0;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div class="brand">
+      <div class="brand-mark">ar</div>
+      <span class="brand-name">Papers</span>
+    </div>
+    <input id="filter" type="text" placeholder="Search papers..." oninput="filterCards()">
+  </div>
+  <div id="cards"></div>
+  <div id="sidebar-footer">
+    <button id="archive-btn" disabled onclick="archiveSelected()">
+      Archive
+      <span id="sel-count">0</span>
+    </button>
+    <div id="archive-status"></div>
+    <div id="nlm-auth">
+      Run this once in your terminal to link your Google account:
+      <code>notebooklm login</code>
+      Then click Archive again.
+    </div>
+  </div>
+</div>
+
+<div id="panel">
+  <div id="panel-header">
+    <div id="panel-arxiv-id"></div>
+    <div id="panel-title"></div>
+  </div>
+  <div id="empty-state">
+    <div class="empty-glyph">📄</div>
+    <span class="empty-text">Select a paper to read its summary</span>
+  </div>
+  <div id="panel-content"></div>
+</div>
+
+<script>
+  let summaries = [];
+  let selected = new Set();
+  let activeId = null;
+
+  const archiveBtn = () => document.getElementById('archive-btn');
+  const selCount = () => document.getElementById('sel-count');
+  const statusEl = () => document.getElementById('archive-status');
+
+  function updateArchiveBtn() {
+    archiveBtn().disabled = selected.size === 0;
+    selCount().textContent = selected.size;
+  }
+
+  async function load() {
+    const res = await fetch('/summaries');
+    summaries = await res.json();
+    renderCards(summaries);
+  }
+
+  function renderCards(items) {
+    if (!items.length) {
+      document.getElementById('cards').innerHTML =
+        '<p class="no-results">No papers found.</p>';
+      return;
+    }
+    document.getElementById('cards').innerHTML = items.map(s => `
+      <div class="card ${activeId === s.id ? 'active' : ''} ${selected.has(s.id) ? 'selected' : ''}"
+           id="card-${s.id}" onclick="showSummary('${s.id}')">
+        <input type="checkbox" ${selected.has(s.id) ? 'checked' : ''}
+               onclick="event.stopPropagation(); toggleSelect('${s.id}')">
+        <div class="card-body">
+          <div class="card-id">${escHtml(s.id)}</div>
+          <div class="card-title">${escHtml(s.title)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function showSummary(id) {
+    activeId = id;
+    const s = summaries.find(x => x.id === id);
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('panel-header').style.display = 'block';
+    document.getElementById('panel-arxiv-id').textContent = s.id;
+    document.getElementById('panel-title').textContent = s.title;
+    const content = document.getElementById('panel-content');
+    content.textContent = s.content;
+    content.style.display = 'block';
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    document.getElementById('card-' + id)?.classList.add('active');
+  }
+
+  function toggleSelect(id) {
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+    const card = document.getElementById('card-' + id);
+    if (card) card.classList.toggle('selected');
+    updateArchiveBtn();
+  }
+
+  function filterCards() {
+    const q = document.getElementById('filter').value.toLowerCase();
+    renderCards(q ? summaries.filter(s => s.title.toLowerCase().includes(q)) : summaries);
+  }
+
+  async function archiveSelected() {
+    archiveBtn().disabled = true;
+    statusEl().textContent = 'Archiving...';
+    statusEl().style.color = '';
+    document.getElementById('nlm-auth').style.display = 'none';
+    try {
+      const res = await fetch('/archive', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ids: [...selected]})
+      });
+      const data = await res.json();
+      let msg = data.archived + ' article(s) archived' +
+        (data.not_found.length ? ', ' + data.not_found.length + ' PDF(s) not found' : '');
+      if (data.notebooklm === 'started') msg += ' · NotebookLM export started';
+      statusEl().textContent = msg;
+      statusEl().style.color = data.not_found.length ? '#e05252' : '#4caf7d';
+      if (data.notebooklm === 'needs_auth') {
+        statusEl().textContent += ' · NotebookLM: auth required';
+        statusEl().style.color = '#e08852';
+        document.getElementById('nlm-auth').style.display = 'block';
+      }
+    } catch (e) {
+      statusEl().textContent = 'Error: ' + e.message;
+      statusEl().style.color = '#e05252';
+    }
+    archiveBtn().disabled = selected.size === 0;
+  }
+
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  load();
+</script>
+</body>
+</html>

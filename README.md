@@ -5,7 +5,6 @@ A Python application that downloads academic papers from arXiv and generates sum
 <img width="2319" height="1329" alt="Screenshot 2026-06-25 at 08 45 04" src="https://github.com/user-attachments/assets/45c95391-2f75-43f3-a0d4-253582ec6aab" />
 
 
-
 ## Description
 
 If you're subscribed to the arXiv mailing list, you likely receive emails containing numerous paper links and descriptions. From the email content, it is often difficult to understand what each paper is trying to solve, making it challenging to decide which ones are worth investing your time in.
@@ -20,6 +19,8 @@ With this application, you simply copy the email content into a text file and pr
 - Generate summaries using local AI
 - Organized output in date-stamped directories
 - Support for both short and medium length summaries
+- Web interface for viewing and archiving papers
+- Automatic NotebookLM export integration
 
 ## Requirements
 
@@ -64,7 +65,7 @@ With this application, you simply copy the email content into a text file and pr
 Summaries are saved in a date-stamped directory structure:
 ```
 YYYY_Mon_DD/summary/2501.12345.txt
-```
+``` 
 
 Each summary file contains:
 - Paper title
@@ -111,3 +112,41 @@ When you archive papers, the app can automatically create a Google NotebookLM no
 After setup, archiving papers from the UI will automatically create a notebook named **"AI - arXiv - YYYY Mon DD"** in your NotebookLM account with the selected PDFs added as sources.
 
 If you see "NotebookLM: auth required" in the UI, run `notebooklm login` again to refresh your session.
+
+## Project Structure
+
+```
+arxiv-summarizer/
+├── src/                    # Main Python package
+│   ├── __init__.py
+│   ├── config.py
+│   ├── downloader.py
+│   ├── extractor.py
+│   ├── pdf_parser.py
+│   ├── summarizer.py
+│   ├── utils.py
+│   └── notebooklm_export.py
+├── web/                    # Web interface files
+│   ├── index.html
+│   └── server.py
+├── config/
+│   └── config.yaml         # Configuration file
+├── main.py                 # Entry point
+├── requirements.txt        # Python dependencies
+├── setup.py                # Package setup
+├── pyproject.toml         # Project metadata
+└── README.md              # This file
+```
+
+## Development
+
+To install the package in development mode:
+
+```bash
+pip install -e .
+```
+
+To run tests:
+
+```bash
+pytest

@@ -2,13 +2,13 @@ import argparse
 import sys
 from pathlib import Path
 
-import config
-import downloader
-import extractor
-import pdf_parser
-import summarizer
-from server import start_server
-from utils import get_date_directory, get_latest_directory
+from src import config
+from src import downloader
+from src import extractor
+from src import pdf_parser
+from src import summarizer
+from src.utils import get_date_directory, get_latest_directory
+from web.server import start_server
 
 
 def main():
